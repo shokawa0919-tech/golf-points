@@ -82,3 +82,18 @@ input,select,textarea{font-size:16px}
 .hole-target-tags{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;min-height:0;margin-top:4px}
 .hole-target-tag{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:900;line-height:1.2;background:#eaf3ff;border:1px solid #9fc2ee;color:var(--blue)}
 .hole-target-tags:empty{display:none}
+
+/* v9: 基本設定の日付・ゴルフコース入力欄の高さを統一 */
+.basic-meta-row input{
+  box-sizing:border-box!important;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+}
+.date-field .date-compact,
+.course-field input{
+  box-sizing:border-box!important;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+}
