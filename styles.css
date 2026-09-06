@@ -76,3 +76,39 @@ th,td{padding:7px 4px;border-bottom:1px solid #e6edf4;text-align:center}th:first
 .round-info-row .course-field input{
   line-height:normal!important;
 }
+
+
+/* 基本設定：現在のindex.htmlに合わせた日付/コース配置 */
+.basic-meta-row{
+  display:grid!important;
+  grid-template-columns:minmax(0, 2fr) minmax(0, 3fr)!important;
+  gap:8px!important;
+  align-items:end!important;
+  width:100%!important;
+}
+.meta-field{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+  min-width:0!important;
+  font-size:12px!important;
+  font-weight:800!important;
+}
+.basic-meta-row .meta-field input{
+  box-sizing:border-box!important;
+  width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  margin:0!important;
+  padding:0 8px!important;
+  border:1px solid #c6d6e5!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  font:inherit!important;
+}
+.basic-meta-row input[type="date"]{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  line-height:normal!important;
+}
