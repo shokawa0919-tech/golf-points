@@ -12,6 +12,9 @@ const AWARDS = [
 const defaultState = () => ({
   date:"",
   course:"",
+  golfCourse:"",
+  frontCourse:"",
+  backCourse:"",
   names:["","","",""],
   awardPoints:{
     hio:[100,100,100,100], alb:[100,100,100,100], eagle:[10,10,10,10], birdie:[1,1,1,1]
@@ -45,6 +48,14 @@ function saveState(){ localStorage.setItem("golfPointsState", JSON.stringify(sta
 function migrateDefaults(){
   const desired={hio:100,alb:100,eagle:10,birdie:1};
   let changed=false;
+
+  // 旧「ゴルフコース」データを新しい「ゴルフ場」に引き継ぐ
+  if(typeof state.golfCourse!=="string"){
+    state.golfCourse = typeof state.course==="string" ? state.course : "";
+    changed=true;
+  }
+  if(typeof state.frontCourse!=="string"){ state.frontCourse=""; changed=true; }
+  if(typeof state.backCourse!=="string"){ state.backCourse=""; changed=true; }
   if(!Array.isArray(state.tateHandicap) || state.tateHandicap.length!==4){
     state.tateHandicap=[0,0,0,0];
     changed=true;
@@ -75,7 +86,9 @@ function syncNameHeaders(){
 
 function renderSettings(){
   document.getElementById("dateInput").value = state.date || "";
-  document.getElementById("courseInput").value = state.course || "";
+  document.getElementById("golfCourseInput").value = state.golfCourse || state.course || "";
+  document.getElementById("frontCourseInput").value = state.frontCourse || "";
+  document.getElementById("backCourseInput").value = state.backCourse || "";
 
   const nameWrap=document.getElementById("playerNameInputs");
   nameWrap.innerHTML = state.names.map((n,i)=>`
@@ -113,7 +126,10 @@ function renderSettings(){
 
 function saveSettings(){
   state.date=document.getElementById("dateInput").value;
-  state.course=document.getElementById("courseInput").value.trim();
+  state.golfCourse=document.getElementById("golfCourseInput").value.trim();
+  state.frontCourse=document.getElementById("frontCourseInput").value.trim();
+  state.backCourse=document.getElementById("backCourseInput").value.trim();
+  state.course=state.golfCourse;
   document.querySelectorAll("[data-player-name]").forEach(el=> state.names[Number(el.dataset.playerName)]=el.value);
   document.querySelectorAll("[data-tate-hcp-p]").forEach(el=>{
     state.tateHandicap[Number(el.dataset.tateHcpP)] = Number(el.value||0);
@@ -178,7 +194,9 @@ function renderScore(){
   const h=state.holes[currentHole-1];
 
   document.getElementById("holeTitle").textContent=`${currentHole}H`;
-  document.getElementById("holeMeta").textContent=`${state.course || "コース未設定"} / ${state.date || "日付未設定"}`;
+  const halfCourse = currentHole<=9 ? state.frontCourse : state.backCourse;
+  const halfLabel = currentHole<=9 ? "前半コース未設定" : "後半コース未設定";
+  document.getElementById("holeMeta").textContent=`${state.golfCourse || state.course || "ゴルフ場未設定"} / ${halfCourse || halfLabel} / ${state.date || "日付未設定"}`;
   const targetTags=[];
   if(state.driveHoles[currentHole-1]) targetTags.push(`<span class="hole-target-tag">ドラコン対象</span>`);
   if(state.nearHoles[currentHole-1]) targetTags.push(`<span class="hole-target-tag">ニアピン対象</span>`);

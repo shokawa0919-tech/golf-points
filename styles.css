@@ -53,42 +53,166 @@ th,td{padding:7px 4px;border-bottom:1px solid #e6edf4;text-align:center}th:first
 .round-info-row .course-field input{line-height:normal!important;padding-left:9px!important;padding-right:9px!important;}
 
 
-/* FINAL: 基本設定 日付40% / ゴルフコース60% */
+/* ===== 2026-09-06 UI調整 ===== */
 .basic-meta-row{
-  display:grid !important;
-  grid-template-columns:40% 60% !important;
-  column-gap:8px !important;
-  align-items:end !important;
-  width:100% !important;
-  padding-right:8px !important;
+  display:grid!important;
+  grid-template-columns:minmax(0,2fr) minmax(0,3fr)!important;
+  gap:8px!important;
+  align-items:end!important;
+  width:100%!important;
 }
-.basic-meta-row > .meta-field{
-  display:flex !important;
-  flex-direction:column !important;
-  gap:5px !important;
-  min-width:0 !important;
-  width:auto !important;
-  font-size:12px !important;
-  font-weight:800 !important;
+.course-half-row{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  margin-top:8px!important;
+  width:100%!important;
 }
-.basic-meta-row > .meta-field > input,
-.basic-meta-row input.date-compact,
-.basic-meta-row .course-field input{
-  display:block !important;
-  box-sizing:border-box !important;
-  width:100% !important;
-  height:38px !important;
-  min-height:38px !important;
-  max-height:38px !important;
-  margin:0 !important;
-  padding:0 8px !important;
-  border:1px solid #c6d6e5 !important;
-  border-radius:8px !important;
-  background:#fff !important;
-  font:inherit !important;
+.meta-field{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+  min-width:0!important;
+  font-size:12px!important;
+  font-weight:800!important;
+}
+.basic-meta-row .meta-field input,
+.course-half-row .meta-field input{
+  box-sizing:border-box!important;
+  display:block!important;
+  width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  margin:0!important;
+  padding:0 8px!important;
+  border:1px solid #c6d6e5!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  font:inherit!important;
 }
 .basic-meta-row input[type="date"]{
-  -webkit-appearance:none !important;
-  appearance:none !important;
-  line-height:normal !important;
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  line-height:normal!important;
+}
+
+#scoreInputs.player-grid{align-items:start!important}
+.score-player{min-width:0!important;text-align:center!important}
+.score-player-name{
+  font-size:12px!important;
+  font-weight:800!important;
+  margin-bottom:5px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.score-stepper{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 30px!important;
+  gap:4px!important;
+  align-items:center!important;
+  width:100%!important;
+}
+.score-step-value{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  height:46px!important;
+  min-width:0!important;
+  border:1px solid #c6d6e5!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  font-size:18px!important;
+  font-weight:900!important;
+}
+.score-step-controls{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:4px!important;
+  width:30px!important;
+}
+.score-step-btn{
+  width:30px!important;
+  height:21px!important;
+  min-height:21px!important;
+  padding:0!important;
+  margin:0!important;
+  border:1px solid #c8d8e6!important;
+  border-radius:8px!important;
+  background:#f2f4f7!important;
+  color:var(--text)!important;
+  font-size:16px!important;
+  font-weight:700!important;
+  line-height:19px!important;
+}
+
+.olympic-player-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:7px!important;
+  align-items:start!important;
+}
+.olympic-player-col{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:6px!important;
+  min-width:0!important;
+}
+.olympic-player-name{
+  text-align:center!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  margin-bottom:1px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.olympic-rank-btn{
+  width:100%!important;
+  min-width:0!important;
+  min-height:34px!important;
+  padding:5px 1px!important;
+  margin:0!important;
+  border:1px solid #c8d8e6!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  color:var(--text)!important;
+  font-size:12px!important;
+  font-weight:700!important;
+  line-height:1.15!important;
+  white-space:nowrap!important;
+}
+.olympic-rank-btn.active{
+  background:var(--blue2)!important;
+  border-color:var(--blue)!important;
+  color:var(--blue)!important;
+  box-shadow:inset 0 0 0 1px var(--blue)!important;
+}
+
+.hole-point-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:7px!important;
+}
+.hole-point-item{
+  min-width:0!important;
+  padding:9px 3px!important;
+  border-radius:9px!important;
+  background:var(--blue2)!important;
+  text-align:center!important;
+}
+.hole-point-name{
+  font-size:11px!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.hole-point-value{
+  margin-top:2px!important;
+  color:var(--blue)!important;
+  font-size:18px!important;
+  font-weight:900!important;
+  line-height:1.1!important;
 }
