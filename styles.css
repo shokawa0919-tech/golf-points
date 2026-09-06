@@ -38,16 +38,41 @@ th,td{padding:7px 4px;border-bottom:1px solid #e6edf4;text-align:center}th:first
 .warning{background:var(--warn)}
 .tate-input{width:56px!important;text-align:center}
 
-.date-compact{width:95px!important;height:36px!important;padding:6px 4px!important;}
 
-.round-info-row{display:grid;grid-template-columns:112px 1fr;gap:8px;align-items:end}
-.round-field{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:800}
-.round-field input{height:38px!important}
-.date-compact{width:100%!important;height:38px!important;padding:6px 5px!important}
-.course-field input{height:38px!important}
-
-
-/* iPhone Safari: date/course exact visual height alignment */
-.round-info-row .round-field input{box-sizing:border-box!important;height:44px!important;min-height:44px!important;max-height:44px!important;margin:0!important;padding-top:0!important;padding-bottom:0!important;}
-.round-info-row input[type="date"]{-webkit-appearance:none!important;appearance:none!important;line-height:44px!important;padding-left:8px!important;padding-right:8px!important;}
-.round-info-row .course-field input{line-height:normal!important;padding-left:9px!important;padding-right:9px!important;}
+/* 基本設定：日付40% / ゴルフコース60%、横並び・同じ高さ */
+.round-info-row{
+  display:grid!important;
+  grid-template-columns:minmax(0, 2fr) minmax(0, 3fr)!important;
+  gap:8px!important;
+  align-items:end!important;
+  width:100%!important;
+}
+.round-field{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+  min-width:0!important;
+  font-size:12px!important;
+  font-weight:800!important;
+}
+.round-info-row .round-field input{
+  box-sizing:border-box!important;
+  width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  margin:0!important;
+  padding:0 8px!important;
+  border:1px solid #c6d6e5!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  font:inherit!important;
+}
+.round-info-row input[type="date"]{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  line-height:normal!important;
+}
+.round-info-row .course-field input{
+  line-height:normal!important;
+}
