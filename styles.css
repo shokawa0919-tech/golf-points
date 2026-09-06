@@ -97,3 +97,28 @@ input,select,textarea{font-size:16px}
   min-height:44px!important;
   max-height:44px!important;
 }
+
+/* v10: iOSのtype=date固有の高さを無効化し、コース欄と完全に揃える */
+.basic-meta-row .date-field input[type="date"],
+.basic-meta-row .course-field input[type="text"]{
+  box-sizing:border-box!important;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  margin:0!important;
+  padding:0 10px!important;
+  line-height:44px!important;
+  border:1px solid #c6d6e5!important;
+  border-radius:8px!important;
+}
+.basic-meta-row .date-field input[type="date"]{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  display:block!important;
+}
+.basic-meta-row .date-field input[type="date"]::-webkit-date-and-time-value{
+  text-align:left;
+  min-height:0;
+  margin:0;
+  padding:0;
+}
