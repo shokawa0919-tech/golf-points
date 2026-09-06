@@ -216,3 +216,38 @@ th,td{padding:7px 4px;border-bottom:1px solid #e6edf4;text-align:center}th:first
   font-weight:900!important;
   line-height:1.1!important;
 }
+
+
+/* ===== 2026-09-06 基本設定コンパクト調整 ===== */
+
+/* 基本設定の4入力だけ少し低くする */
+.basic-meta-row .meta-field input,
+.course-half-row .meta-field input{
+  height:34px!important;
+  min-height:34px!important;
+  max-height:34px!important;
+  padding-top:0!important;
+  padding-bottom:0!important;
+}
+
+/* iPhone Chromeの日付文字を上下中央へ */
+.basic-meta-row input[type="date"]{
+  display:flex!important;
+  align-items:center!important;
+  line-height:34px!important;
+}
+.basic-meta-row input[type="date"]::-webkit-date-and-time-value{
+  display:flex!important;
+  align-items:center!important;
+  min-height:34px!important;
+  height:34px!important;
+  margin:0!important;
+  padding:0!important;
+}
+.basic-meta-row input[type="date"]::-webkit-datetime-edit{
+  display:flex!important;
+  align-items:center!important;
+  height:34px!important;
+  line-height:34px!important;
+  padding:0!important;
+}
