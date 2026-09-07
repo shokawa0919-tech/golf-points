@@ -24,7 +24,7 @@ const defaultState = () => ({
   driveHoles:Array(18).fill(false),
   nearHoles:Array(18).fill(false),
   holes:Array.from({length:18},()=>({
-    scores:[4,4,4,4],
+    scores:[null,null,null,null],
     olympic:[null,null,null,null],
     drive:null,
     near:null,
@@ -34,7 +34,7 @@ const defaultState = () => ({
 
 let state = loadState();
 let currentHole = 1;
-let currentLimit = 3;
+let currentLimit = 9;
 
 function loadState(){
   try{
@@ -202,8 +202,10 @@ function renderScore(){
   if(state.nearHoles[currentHole-1]) targetTags.push(`<span class="hole-target-tag">ニアピン対象</span>`);
   document.getElementById("holeTargetTags").innerHTML=targetTags.join("");
 
-  // 未入力のホールはスコア4を初期値にする
-  h.scores = h.scores.map(v => (v===null || v===undefined || v==="") ? 4 : Number(v));
+  // 未入力ホールの初期値：ドラコン対象=5、ニアピン対象=3、それ以外=4
+  // 両方に設定された場合はニアピン(3)を優先
+  const defaultScore = state.nearHoles[currentHole-1] ? 3 : (state.driveHoles[currentHole-1] ? 5 : 4);
+  h.scores = h.scores.map(v => (v===null || v===undefined || v==="") ? defaultScore : Number(v));
   document.getElementById("scoreInputs").innerHTML = ns.map((n,p)=>`
     <div class="score-player">
       <div class="score-player-name">${escapeHtml(n)}</div>
@@ -396,82 +398,91 @@ function updateHolePointSummary(){
   `).join("");
 }
 
+function signed(v){
+  const n=Number(v||0);
+  return n>0 ? `+${n}` : `${n}`;
+}
+
+function medalMarks(start,end,p){
+  const marks=["","","","",""];
+  for(let hi=start-1;hi<end;hi++){
+    const r=state.holes[hi].olympic[p];
+    if([0,1,2,3,4].includes(r)) marks[r]=["💎","🥇","🥈","🥉","⚫"][r];
+  }
+  return marks;
+}
+
+// タテ：各相手とのネットスコア差をポイント化（少ないスコアが＋）
+// ヨコ：各相手との獲得ポイント差を＋−化
+function settlementPoints(values, lowerIsBetter=false){
+  return values.map((v,p)=>{
+    if(v===null || v===undefined) return null;
+    let pt=0;
+    values.forEach((other,q)=>{
+      if(q===p || other===null || other===undefined) return;
+      pt += lowerIsBetter ? Number(other)-Number(v) : Number(v)-Number(other);
+    });
+    return pt;
+  });
+}
+
+function renderResultTable(label,start,end,y){
+  const ns=playerNames();
+  const nets=[0,1,2,3].map(p=>netRange(start,end,p));
+  const tatePts=settlementPoints(nets,true);
+  const yokoPts=settlementPoints(y.totals,false);
+  const totals=tatePts.map((v,p)=>v===null ? null : v+yokoPts[p]);
+  const order=[0,1,2,3].sort((a,b)=>(totals[b]??-999999)-(totals[a]??-999999));
+
+  return `
+    <div class="card ranking">
+      <h2>${label}</h2>
+      <div class="table-wrap result-summary-wrap">
+        <table class="result-summary-table">
+          <thead>
+            <tr><th>順位</th><th>氏名</th><th>💎</th><th>🥇</th><th>🥈</th><th>🥉</th><th>⚫</th><th>ヨコ</th><th>タテ</th><th>合計</th></tr>
+          </thead>
+          <tbody>${order.map((p,i)=>{
+            const m=medalMarks(start,end,p);
+            return `<tr>
+              <td>${i+1}位</td>
+              <td>${escapeHtml(ns[p])}</td>
+              ${m.map(x=>`<td class="medal-cell">${x}</td>`).join("")}
+              <td class="${yokoPts[p]>=0?"pos":"neg"}">${signed(yokoPts[p])}</td>
+              <td class="${(tatePts[p]??0)>=0?"pos":"neg"}">${tatePts[p]===null?"－":signed(tatePts[p])}</td>
+              <td class="big ${(totals[p]??0)>=0?"pos":"neg"}">${totals[p]===null?"－":signed(totals[p])}</td>
+            </tr>`;
+          }).join("")}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
 function renderResults(limit=currentLimit){
   currentLimit=limit;
   saveCurrentHole();
   document.querySelectorAll(".result-range button").forEach(b=>b.classList.toggle("active",Number(b.dataset.limit)===limit));
-  const ns=playerNames();
-  const isBack9=limit===109;
-  const y=isBack9 ? calcYokoRange(10,18) : calcYoko(limit);
-  const body=document.getElementById("resultsBody");
 
-  if(limit<9){
-    const order=[0,1,2,3].sort((a,b)=>y.totals[b]-y.totals[a]);
-    body.innerHTML=`
-      <div class="card ranking">
-        <h2>${limit}H終了時点｜現在順位</h2>
-        <p class="hint">途中はヨコ累計のみ表示。タテは表示しません。</p>
-        <table><thead><tr><th>順位</th><th>プレイヤー</th><th>ヨコ累計</th></tr></thead>
-        <tbody>${order.map((p,i)=>`<tr><td>${i+1}位</td><td>${escapeHtml(ns[p])}</td><td class="pos">+${y.totals[p]}pt</td></tr>`).join("")}</tbody></table>
-      </div>`;
+  const body=document.getElementById("resultsBody");
+  const isBack9=limit===109;
+  const is18=limit===18;
+
+  if(is18){
+    const front=calcYoko(9);
+    const back=calcYokoRange(10,18);
+    const all=calcYoko(18);
+    body.innerHTML =
+      renderResultTable("前半9H 結果",1,9,front) +
+      renderResultTable("後半9H 結果",10,18,back) +
+      renderResultTable("18H 最終結果",1,18,all);
     return;
   }
 
-  const is18=limit===18;
-  const title=is18?"18H 最終結果":(isBack9?"後半9H 結果":"前半9H 結果");
-
-  const ranges = is18
-    ? [{label:"前半9H",start:1,end:9},{label:"後半9H",start:10,end:18},{label:"18H",start:1,end:18}]
-    : [isBack9 ? {label:"後半9H",start:10,end:18} : {label:"前半9H",start:1,end:9}];
-
-  const tateRows = ranges.map(r => ({
-    label:r.label,
-    nets:[0,1,2,3].map(p=>netRange(r.start,r.end,p))
-  }));
-
-  const order=[0,1,2,3].sort((a,b)=>y.totals[b]-y.totals[a]);
-
-  body.innerHTML=`
-    <div class="card ranking">
-      <h2>${title}</h2>
-      <p class="hint">タテとヨコは別集計です。タテはヨコに加算しません。</p>
-      <table>
-        <thead><tr><th>順位</th><th>プレイヤー</th><th>ヨコ</th></tr></thead>
-        <tbody>${order.map((p,i)=>`
-          <tr><td>${i+1}位</td><td>${escapeHtml(ns[p])}</td><td class="big">+${y.totals[p]}pt</td></tr>
-        `).join("")}</tbody>
-      </table>
-    </div>
-
-    ${tateRows.map(row=>`
-      <div class="card">
-        <h2>タテ｜${row.label}</h2>
-        <p class="hint">設定画面のタテ用18Hハンデを使用。9Hはハンデの1/2で計算します。</p>
-        <table>
-          <thead><tr><th>プレイヤー</th><th>ネットスコア</th></tr></thead>
-          <tbody>${row.nets.map((v,p)=>`
-            <tr><td>${escapeHtml(ns[p])}</td><td>${v===null?"未入力":v}</td></tr>
-          `).join("")}</tbody>
-        </table>
-      </div>
-    `).join("")}
-
-    <div class="card">
-      <h2>ヨコ累計内訳（獲得ポイントのみ）</h2>
-      <div class="table-wrap"><table>
-        <thead><tr><th>項目</th>${ns.map(n=>`<th>${escapeHtml(n)}</th>`).join("")}</tr></thead>
-        <tbody>
-          ${[
-            ["yoko","ヨコ本体"],["olympic","オリンピック"],["grand","グランドスラム"],
-            ["drive","ドラコン"],["near","ニアピン"],["hio","ホールインワン賞"],
-            ["alb","アルバトロス賞"],["eagle","イーグル賞"],["birdie","バーディー賞"]
-          ].map(([k,label])=>`<tr><td>${label}</td>${y.detail.map(d=>`<td>${d[k]}</td>`).join("")}</tr>`).join("")}
-          <tr><td><b>ヨコ合計</b></td>${y.totals.map(v=>`<td><b>${v}</b></td>`).join("")}</tr>
-        </tbody>
-      </table></div>
-      <p class="hint">ヨコ累計内訳は獲得ポイントのみ表示。マイナス表示はしません。</p>
-    </div>`;
-
+  if(isBack9){
+    body.innerHTML=renderResultTable("後半9H 結果",10,18,calcYokoRange(10,18));
+  }else{
+    body.innerHTML=renderResultTable("前半9H 結果",1,9,calcYoko(9));
+  }
 }
 
 function escapeHtml(s){
@@ -518,4 +529,4 @@ document.getElementById("resetBtn").onclick=()=>{
 migrateDefaults();
 renderSettings();
 renderScore();
-renderResults(3);
+renderResults(9);

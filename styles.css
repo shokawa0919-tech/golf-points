@@ -251,3 +251,36 @@ th,td{padding:7px 4px;border-bottom:1px solid #e6edf4;text-align:center}th:first
   line-height:34px!important;
   padding:0!important;
 }
+
+
+/* ===== 2026-09-07 集計画面・持越し調整 ===== */
+.carry-items{
+  display:flex!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+  width:100%!important;
+}
+.carry-items span{
+  flex:1 1 0!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+}
+.result-range{
+  display:grid!important;
+  grid-template-columns:repeat(3,1fr)!important;
+  gap:7px!important;
+}
+.result-summary-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+.result-summary-table{
+  min-width:650px!important;
+  font-size:11px!important;
+}
+.result-summary-table th,
+.result-summary-table td{
+  padding:7px 5px!important;
+  white-space:nowrap!important;
+}
+.result-summary-table .medal-cell{
+  font-size:16px!important;
+  min-width:30px!important;
+}
