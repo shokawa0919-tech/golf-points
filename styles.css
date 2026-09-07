@@ -302,3 +302,81 @@ th,td{padding:7px 4px;border-bottom:1px solid #e6edf4;text-align:center}th:first
   white-space:nowrap!important;
   font-size:13px!important;
 }
+
+
+/* ===== 結果画面 2026-09-07 確定修正 ===== */
+.result-summary-wrap{
+  overflow-x:visible!important;
+  width:100%!important;
+}
+.result-summary-table{
+  width:100%!important;
+  min-width:0!important;
+  table-layout:fixed!important;
+  font-size:10px!important;
+}
+.result-summary-table .col-rank{width:9%!important}
+.result-summary-table .col-name{width:18%!important}
+.result-summary-table .col-medal{width:7%!important}
+.result-summary-table .col-point{width:11%!important}
+.result-summary-table .col-total{width:12%!important}
+.result-summary-table th,
+.result-summary-table td{
+  padding:7px 1px!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+}
+.result-summary-table .result-name{
+  font-size:11px!important;
+}
+.result-summary-table .medal-cell{
+  min-width:0!important;
+  font-size:13px!important;
+}
+.result-summary-table .big{
+  font-size:11px!important;
+  font-weight:800!important;
+}
+.olympic-mark{
+  display:inline-block;
+  vertical-align:middle;
+}
+.olympic-mark.diamond{
+  font-size:14px;
+  line-height:1;
+}
+.olympic-mark.gold,
+.olympic-mark.silver,
+.olympic-mark.bronze,
+.olympic-mark.iron{
+  width:13px;
+  height:13px;
+  border-radius:50%;
+  border:1px solid rgba(0,0,0,.25);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.55);
+}
+.olympic-mark.gold{background:#f2c318}
+.olympic-mark.silver{background:#bfc3c8}
+.olympic-mark.bronze{background:#b86a2b}
+.olympic-mark.iron{background:#292929}
+
+.result-breakdown table{
+  width:100%;
+  table-layout:fixed;
+  font-size:11px;
+}
+.result-breakdown th,
+.result-breakdown td{
+  padding:7px 3px;
+  text-align:center;
+}
+.result-breakdown th:first-child,
+.result-breakdown td:first-child{
+  width:32%;
+  text-align:left;
+  white-space:nowrap;
+}
+.result-breakdown .breakdown-total td{
+  font-weight:800;
+}

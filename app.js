@@ -424,12 +424,19 @@ function signed(v){
 }
 
 function medalMarks(start,end,p){
-  const marks=["","","","",""];
+  const got=[false,false,false,false,false];
   for(let hi=start-1;hi<end;hi++){
     const r=state.holes[hi].olympic[p];
-    if([0,1,2,3,4].includes(r)) marks[r]=["💎","🥇","🥈","🥉","⚫"][r];
+    if([0,1,2,3,4].includes(r)) got[r]=true;
   }
-  return marks;
+  return got;
+}
+
+function olympicMark(rank, active=true){
+  if(!active) return "";
+  if(rank===0) return '<span class="olympic-mark diamond">💎</span>';
+  const cls=["","gold","silver","bronze","iron"][rank];
+  return `<span class="olympic-mark ${cls}"></span>`;
 }
 
 // タテ：各相手とのネットスコア差をポイント化（少ないスコアが＋）
@@ -459,15 +466,25 @@ function renderResultTable(label,start,end,y){
       <h2>${label}</h2>
       <div class="table-wrap result-summary-wrap">
         <table class="result-summary-table">
+          <colgroup>
+            <col class="col-rank"><col class="col-name">
+            <col class="col-medal"><col class="col-medal"><col class="col-medal"><col class="col-medal"><col class="col-medal">
+            <col class="col-point"><col class="col-point"><col class="col-total">
+          </colgroup>
           <thead>
-            <tr><th>順位</th><th>氏名</th><th>💎</th><th>🥇</th><th>🥈</th><th>🥉</th><th>⚫</th><th>ヨコ</th><th>タテ</th><th>合計</th></tr>
+            <tr>
+              <th>順位</th><th>氏名</th>
+              <th>${olympicMark(0)}</th><th>${olympicMark(1)}</th><th>${olympicMark(2)}</th>
+              <th>${olympicMark(3)}</th><th>${olympicMark(4)}</th>
+              <th>ヨコ</th><th>タテ</th><th>合計</th>
+            </tr>
           </thead>
           <tbody>${order.map((p,i)=>{
             const m=medalMarks(start,end,p);
             return `<tr>
               <td>${i+1}位</td>
-              <td>${escapeHtml(ns[p])}</td>
-              ${m.map(x=>`<td class="medal-cell">${x}</td>`).join("")}
+              <td class="result-name">${escapeHtml(ns[p])}</td>
+              ${m.map((x,r)=>`<td class="medal-cell">${olympicMark(r,x)}</td>`).join("")}
               <td class="${yokoPts[p]>=0?"pos":"neg"}">${signed(yokoPts[p])}</td>
               <td class="${(tatePts[p]??0)>=0?"pos":"neg"}">${tatePts[p]===null?"－":signed(tatePts[p])}</td>
               <td class="big ${(totals[p]??0)>=0?"pos":"neg"}">${totals[p]===null?"－":signed(totals[p])}</td>
@@ -475,6 +492,29 @@ function renderResultTable(label,start,end,y){
           }).join("")}</tbody>
         </table>
       </div>
+    </div>`;
+}
+
+function renderBreakdown(label,y){
+  const ns=playerNames();
+  const rows=[
+    ["yoko","ヨコ本体"],["olympic","オリンピック"],["grand","グランドスラム"],
+    ["drive","ドラコン"],["near","ニアピン"],["hio","ホールインワン賞"],
+    ["alb","アルバトロス賞"],["eagle","イーグル賞"],["birdie","バーディー賞"]
+  ];
+  return `
+    <div class="card result-breakdown">
+      <h2>${label} 内訳</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>項目</th>${ns.map(n=>`<th>${escapeHtml(n)}</th>`).join("")}</tr></thead>
+          <tbody>
+            ${rows.map(([k,name])=>`<tr><td>${name}</td>${y.detail.map(d=>`<td>${d[k]}</td>`).join("")}</tr>`).join("")}
+            <tr class="breakdown-total"><td>ヨコ合計</td>${y.totals.map(v=>`<td>${v}</td>`).join("")}</tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">内訳は獲得ポイントのみ表示します。</p>
     </div>`;
 }
 
@@ -494,14 +534,21 @@ function renderResults(limit=currentLimit){
     body.innerHTML =
       renderResultTable("前半9H 結果",1,9,front) +
       renderResultTable("後半9H 結果",10,18,back) +
-      renderResultTable("18H 最終結果",1,18,all);
+      renderResultTable("18H 最終結果",1,18,all) +
+      renderBreakdown("18H",all);
     return;
   }
 
   if(isBack9){
-    body.innerHTML=renderResultTable("後半9H 結果",10,18,calcYokoRange(10,18));
+    const back=calcYokoRange(10,18);
+    body.innerHTML =
+      renderResultTable("後半9H 結果",10,18,back) +
+      renderBreakdown("後半9H",back);
   }else{
-    body.innerHTML=renderResultTable("前半9H 結果",1,9,calcYoko(9));
+    const front=calcYoko(9);
+    body.innerHTML =
+      renderResultTable("前半9H 結果",1,9,front) +
+      renderBreakdown("前半9H",front);
   }
 }
 
