@@ -562,7 +562,9 @@ function renderTateBreakdown(label,start,end){
 function renderResults(limit=currentLimit){
   currentLimit=limit;
   saveCurrentHole();
-  document.querySelectorAll(".result-range button").forEach(b=>b.classList.toggle("active",Number(b.dataset.limit)===limit));
+  document.querySelectorAll(".result-range button").forEach(
+    b=>b.classList.toggle("active",Number(b.dataset.limit)===limit)
+  );
 
   const body=document.getElementById("resultsBody");
   const isBack9=limit===109;
@@ -572,6 +574,7 @@ function renderResults(limit=currentLimit){
     const front=calcYoko(9);
     const back=calcYokoRange(10,18);
     const all=calcYoko(18);
+
     body.innerHTML =
       renderResultTable("前半9H 結果",1,9,front) +
       renderResultTable("後半9H 結果",10,18,back) +
@@ -589,15 +592,15 @@ function renderResults(limit=currentLimit){
       renderResultTable("後半9H 結果",10,18,back) +
       renderBreakdown("後半9H",back) +
       renderTateBreakdown("後半9H",10,18);
-  }else{
-    const front=calcYoko(9);
-    body.innerHTML =
-      renderResultTable("前半9H 結果",1,9,front) +
-      renderBreakdown("前半9H",front) +
-      renderTateBreakdown("前半9H",1,9);
+    return;
   }
-}
 
+  const front=calcYoko(9);
+  body.innerHTML =
+    renderResultTable("前半9H 結果",1,9,front) +
+    renderBreakdown("前半9H",front) +
+    renderTateBreakdown("前半9H",1,9);
+}
 function escapeHtml(s){
   return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 }

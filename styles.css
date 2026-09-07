@@ -402,3 +402,17 @@ th,td{padding:7px 4px;border-bottom:1px solid #e6edf4;text-align:center}th:first
 .tate-breakdown th:nth-child(3){
   width:35%;
 }
+
+
+/* ===== タテ内訳をヨコ内訳の直後に確実に表示 ===== */
+.tate-breakdown{
+  display:block!important;
+  margin-top:18px!important;
+}
+.tate-breakdown h2{
+  display:block!important;
+}
+.tate-breakdown .table-wrap{
+  display:block!important;
+  overflow:visible!important;
+}
