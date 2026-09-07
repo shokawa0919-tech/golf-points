@@ -576,12 +576,10 @@ function renderResults(limit=currentLimit){
     const all=calcYoko(18);
 
     body.innerHTML =
+      renderResultTable("18H 最終結果",1,18,all) +
       renderResultTable("前半9H 結果",1,9,front) +
       renderResultTable("後半9H 結果",10,18,back) +
-      renderResultTable("18H 最終結果",1,18,all) +
       renderBreakdown("18H",all) +
-      renderTateBreakdown("前半9H",1,9) +
-      renderTateBreakdown("後半9H",10,18) +
       renderTateBreakdown("18H",1,18);
     return;
   }
