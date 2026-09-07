@@ -386,13 +386,19 @@ function calcYokoRange(start,end){
   return result;
 }
 
-function netRange(start,end,p){
+function grossRange(start,end,p){
   let gross=0;
   for(let h=start;h<=end;h++){
     const score=state.holes[h-1].scores[p];
-    if(score===null) return null;
-    gross+=score;
+    if(score===null || score===undefined) return null;
+    gross+=Number(score);
   }
+  return gross;
+}
+
+function netRange(start,end,p){
+  const gross=grossRange(start,end,p);
+  if(gross===null) return null;
   const holes=end-start+1;
   const full=Number(state.tateHandicap?.[p]||0);
   const hdcp = holes===18 ? full : (holes===9 ? full/2 : 0);
@@ -518,6 +524,41 @@ function renderBreakdown(label,y){
     </div>`;
 }
 
+function formatScore(v){
+  if(v===null || v===undefined) return "－";
+  return Number.isInteger(v) ? String(v) : String(Math.round(v*10)/10);
+}
+
+function renderTateBreakdown(label,start,end){
+  const ns=playerNames();
+  const data=[0,1,2,3].map(p=>({
+    p,
+    gross:grossRange(start,end,p),
+    net:netRange(start,end,p)
+  }));
+  return `
+    <div class="card tate-breakdown">
+      <h2>${label} タテ内訳</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>氏名</th><th>グロススコア</th><th>ネットスコア</th></tr>
+          </thead>
+          <tbody>
+            ${data.map(x=>`<tr>
+              <td>${escapeHtml(ns[x.p])}</td>
+              <td>${formatScore(x.gross)}</td>
+              <td>${formatScore(x.net)}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">${end-start+1===9
+        ? "ネットスコア ＝ グロススコア −（18Hハンデ ÷ 2）"
+        : "ネットスコア ＝ グロススコア − 18Hハンデ"}</p>
+    </div>`;
+}
+
 function renderResults(limit=currentLimit){
   currentLimit=limit;
   saveCurrentHole();
@@ -535,7 +576,10 @@ function renderResults(limit=currentLimit){
       renderResultTable("前半9H 結果",1,9,front) +
       renderResultTable("後半9H 結果",10,18,back) +
       renderResultTable("18H 最終結果",1,18,all) +
-      renderBreakdown("18H",all);
+      renderBreakdown("18H",all) +
+      renderTateBreakdown("前半9H",1,9) +
+      renderTateBreakdown("後半9H",10,18) +
+      renderTateBreakdown("18H",1,18);
     return;
   }
 
@@ -543,12 +587,14 @@ function renderResults(limit=currentLimit){
     const back=calcYokoRange(10,18);
     body.innerHTML =
       renderResultTable("後半9H 結果",10,18,back) +
-      renderBreakdown("後半9H",back);
+      renderBreakdown("後半9H",back) +
+      renderTateBreakdown("後半9H",10,18);
   }else{
     const front=calcYoko(9);
     body.innerHTML =
       renderResultTable("前半9H 結果",1,9,front) +
-      renderBreakdown("前半9H",front);
+      renderBreakdown("前半9H",front) +
+      renderTateBreakdown("前半9H",1,9);
   }
 }
 

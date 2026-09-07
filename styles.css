@@ -380,3 +380,25 @@ th,td{padding:7px 4px;border-bottom:1px solid #e6edf4;text-align:center}th:first
 .result-breakdown .breakdown-total td{
   font-weight:800;
 }
+
+
+/* ===== タテ内訳 ===== */
+.tate-breakdown table{
+  width:100%;
+  table-layout:fixed;
+  font-size:13px;
+}
+.tate-breakdown th,
+.tate-breakdown td{
+  padding:9px 4px;
+  text-align:center;
+}
+.tate-breakdown th:first-child,
+.tate-breakdown td:first-child{
+  text-align:left;
+  width:30%;
+}
+.tate-breakdown th:nth-child(2),
+.tate-breakdown th:nth-child(3){
+  width:35%;
+}
