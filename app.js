@@ -56,6 +56,26 @@ function migrateDefaults(){
   }
   if(typeof state.frontCourse!=="string"){ state.frontCourse=""; changed=true; }
   if(typeof state.backCourse!=="string"){ state.backCourse=""; changed=true; }
+
+  // 旧版で全員4が自動入力されていた未入力の対象ホールを新初期値へ移行
+  if(state.scoreDefaultVersion!==2){
+    if(Array.isArray(state.holes)){
+      state.holes.forEach((h,hi)=>{
+        const isTarget = !!state.nearHoles?.[hi] || !!state.driveHoles?.[hi];
+        const allOldDefault = Array.isArray(h?.scores) && h.scores.length===4 && h.scores.every(v=>Number(v)===4);
+        const noOlympic = Array.isArray(h?.olympic) && h.olympic.every(v=>v===null || v===undefined);
+        const noAwards = h?.awards && Object.values(h.awards).every(a=>Array.isArray(a) && a.length===0);
+        const noWinner = (h?.drive===null || h?.drive===undefined) && (h?.near===null || h?.near===undefined);
+        if(isTarget && allOldDefault && noOlympic && noAwards && noWinner){
+          h.scores=[null,null,null,null];
+          changed=true;
+        }
+      });
+    }
+    state.scoreDefaultVersion=2;
+    changed=true;
+  }
+
   if(!Array.isArray(state.tateHandicap) || state.tateHandicap.length!==4){
     state.tateHandicap=[0,0,0,0];
     changed=true;

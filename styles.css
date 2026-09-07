@@ -284,3 +284,21 @@ th,td{padding:7px 4px;border-bottom:1px solid #e6edf4;text-align:center}th:first
   font-size:16px!important;
   min-width:30px!important;
 }
+
+
+/* ===== 2026-09-07 持越し表示 修正 ===== */
+#carryStatus .carry-items{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  column-gap:14px!important;
+  width:100%!important;
+  margin-top:3px!important;
+}
+#carryStatus .carry-items span{
+  display:block!important;
+  min-width:0!important;
+  padding:0 2px!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  font-size:13px!important;
+}
