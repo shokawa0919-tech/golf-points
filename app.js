@@ -214,7 +214,7 @@ function renderScore(){
   const h=state.holes[currentHole-1];
 
   const holePar = state.nearHoles[currentHole-1] ? 3 : (state.driveHoles[currentHole-1] ? 5 : 4);
-  document.getElementById("holeTitle").textContent=`${currentHole}H  Par${holePar}`;
+  document.getElementById("holeTitle").innerHTML=`${currentHole}H <span style="font-size:.72em;margin-left:18px;font-weight:700">Par ${holePar}</span>`;
   const halfCourse = currentHole<=9 ? state.frontCourse : state.backCourse;
   const halfLabel = currentHole<=9 ? "前半コース未設定" : "後半コース未設定";
   document.getElementById("holeMeta").textContent=`${state.golfCourse || state.course || "ゴルフ場未設定"} / ${halfCourse || halfLabel} / ${state.date || "日付未設定"}`;
