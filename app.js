@@ -213,7 +213,8 @@ function renderScore(){
   const ns=playerNames();
   const h=state.holes[currentHole-1];
 
-  document.getElementById("holeTitle").textContent=`${currentHole}H`;
+  const holePar = state.nearHoles[currentHole-1] ? 3 : (state.driveHoles[currentHole-1] ? 5 : 4);
+  document.getElementById("holeTitle").textContent=`${currentHole}H  Par${holePar}`;
   const halfCourse = currentHole<=9 ? state.frontCourse : state.backCourse;
   const halfLabel = currentHole<=9 ? "前半コース未設定" : "後半コース未設定";
   document.getElementById("holeMeta").textContent=`${state.golfCourse || state.course || "ゴルフ場未設定"} / ${halfCourse || halfLabel} / ${state.date || "日付未設定"}`;
