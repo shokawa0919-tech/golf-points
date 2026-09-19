@@ -123,7 +123,7 @@ function renderSettings(){
   });
 
   document.getElementById("tateHandicapInputs").innerHTML = state.tateHandicap.map((v,p)=>`
-    <label>${escapeHtml(playerNames()[p])}<input type="number" step="1" inputmode="numeric" data-tate-hcp-p="${p}" value="${v}"></label>
+    <label><span data-name-col="${p}">${escapeHtml(playerNames()[p])}</span><input type="number" step="1" inputmode="numeric" data-tate-hcp-p="${p}" value="${v}"></label>
   `).join("");
 
   document.getElementById("awardPointTable").innerHTML = AWARDS.map(a=>`
