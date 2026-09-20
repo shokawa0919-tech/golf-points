@@ -643,7 +643,7 @@ document.getElementById("resetBtn").onclick=()=>{
 
 // ===== Supabase cloud save / player history =====
 const SUPABASE_REST_URL = "https://ofogcuvjmwfvqqrpuqix.supabase.co/rest/v1";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9mb2djdXZqbXdmdnFxcnB1cWl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk4NDUyMTQsImV4cCI6MjEwNTQyMTIxNH0.QHf2BqnLVx2G0uRP1sggAu2R8CJgBatQIOYgHNiPA-I";
+const SUPABASE_ANON_KEY = "sb_publishable_REPLACE_WITH_YOUR_FULL_GOLF_APP_KEY";
 
 function supabaseHeaders(extra={}){
   return {
