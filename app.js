@@ -641,7 +641,137 @@ document.getElementById("resetBtn").onclick=()=>{
   }
 };
 
+// ===== Supabase cloud save / player history =====
+const SUPABASE_REST_URL = "https://ofogcuvjmwfvqqrpuqix.supabase.co/rest/v1";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9mb2djdXZqbXdmdnFxcnB1cWl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk4NDUyMTQsImV4cCI6MjEwNTQyMTIxNH0.QHf2BqnLVx2G0uRP1sggAu2R8CJgBatQIOYgHNiPA-I";
+
+function supabaseHeaders(extra={}){
+  return {
+    "apikey": SUPABASE_ANON_KEY,
+    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+    "Content-Type": "application/json",
+    ...extra
+  };
+}
+
+async function saveRoundToSupabase(){
+  saveSettings();
+  saveCurrentHole();
+  const names=playerNames();
+  if(!state.date){ alert("日付を入力してください。"); return; }
+  if(!(state.golfCourse || state.course)){ alert("ゴルフ場を入力してください。"); return; }
+  if(state.names.some(n=>!(n||"").trim())){ alert("4人の名前を入力してください。"); return; }
+  const btn=document.getElementById("cloudSaveRoundBtn");
+  if(btn){ btn.disabled=true; btn.textContent="保存中…"; }
+  try{
+    const res=await fetch(`${SUPABASE_REST_URL}/golf_rounds`,{
+      method:"POST",
+      headers:supabaseHeaders({"Prefer":"return=representation"}),
+      body:JSON.stringify({
+        played_date:state.date,
+        course_name:state.golfCourse || state.course,
+        player_names:names,
+        round_data:state
+      })
+    });
+    if(!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+    alert("ラウンド履歴を保存しました。");
+  }catch(e){
+    console.error(e);
+    alert("保存できませんでした。通信状態またはSupabase設定を確認してください。\n"+e.message);
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent="このラウンドを保存"; }
+  }
+}
+
+function historyResultHtml(rounds,query){
+  if(!rounds.length) return `<div class="card"><p>${escapeHtml(query)} さんの履歴はまだありません。</p></div>`;
+  return rounds.map(r=>{
+    const rd=r.round_data||{};
+    const names=Array.isArray(r.player_names)?r.player_names:[];
+    let summary="";
+    try{
+      const old=state; state=rd;
+      const y=calcYoko(18);
+      summary=`<div class="history-points">${names.map((n,p)=>`<span>${escapeHtml(n)}：${y.totals[p]??0}pt</span>`).join("")}</div>`;
+      state=old;
+    }catch(e){ summary=""; }
+    return `<div class="card history-round-card">
+      <h2>${escapeHtml(r.played_date||"")}　${escapeHtml(r.course_name||"")}</h2>
+      <div class="history-names">${names.map(n=>`<span>${escapeHtml(n)}</span>`).join("")}</div>
+      ${summary}
+    </div>`;
+  }).join("");
+}
+
+async function searchPlayerHistory(){
+  const input=document.getElementById("historyNameInput");
+  const out=document.getElementById("historyResults");
+  const q=(input?.value||"").trim();
+  if(!q){ out.innerHTML='<div class="card"><p>名前を入力してください。</p></div>'; return; }
+  out.innerHTML='<div class="card"><p>検索中…</p></div>';
+  try{
+    const params=new URLSearchParams();
+    params.set("select","id,played_date,course_name,player_names,round_data,created_at");
+    params.set("player_names",`cs.{${q}}`);
+    params.set("order","played_date.desc,created_at.desc");
+    const res=await fetch(`${SUPABASE_REST_URL}/golf_rounds?${params.toString()}`,{headers:supabaseHeaders()});
+    if(!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+    const rows=await res.json();
+    out.innerHTML=historyResultHtml(rows,q);
+  }catch(e){
+    console.error(e);
+    out.innerHTML='<div class="card"><p>履歴を取得できませんでした。通信状態またはSupabase設定を確認してください。</p></div>';
+  }
+}
+
+function installCloudHistoryUI(){
+  const tabs=document.querySelector(".main-tabs");
+  if(tabs && !document.querySelector('[data-tab="history"]')){
+    const b=document.createElement("button");
+    b.type="button"; b.dataset.tab="history"; b.textContent="履歴";
+    tabs.appendChild(b);
+  }
+  if(!document.getElementById("history")){
+    const screen=document.createElement("section");
+    screen.id="history"; screen.className="screen";
+    screen.innerHTML=`<div class="card history-search-card">
+      <h2>名前から履歴検索</h2>
+      <div class="history-search-row"><input id="historyNameInput" type="text" placeholder="名前を入力"><button id="historySearchBtn" type="button">検索</button></div>
+      <p class="hint">保存済みのラウンドから、その人が参加した履歴を新しい順に表示します。</p>
+    </div><div id="historyResults"></div>`;
+    (document.querySelector("main")||document.body).appendChild(screen);
+  }
+  const resultsBody=document.getElementById("resultsBody");
+  if(resultsBody && !document.getElementById("cloudSaveRoundBtn")){
+    const wrap=document.createElement("div");
+    wrap.className="card cloud-save-card";
+    wrap.innerHTML='<h2>ラウンド履歴</h2><button id="cloudSaveRoundBtn" type="button">このラウンドを保存</button><p class="hint">保存すると、他の端末からも名前で履歴を検索できます。</p>';
+    resultsBody.parentNode.insertBefore(wrap,resultsBody);
+  }
+  if(!document.getElementById("cloudHistoryStyle")){
+    const st=document.createElement("style"); st.id="cloudHistoryStyle";
+    st.textContent=`.history-search-row{display:flex;gap:8px}.history-search-row input{flex:1;min-width:0}.history-search-row button,#cloudSaveRoundBtn{font-weight:700}.history-names,.history-points{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.history-names span,.history-points span{background:#eef4ff;border-radius:999px;padding:5px 9px;font-size:.9rem}.history-round-card h2{margin-bottom:6px}`;
+    document.head.appendChild(st);
+  }
+  document.getElementById("cloudSaveRoundBtn")?.addEventListener("click",saveRoundToSupabase);
+  document.getElementById("historySearchBtn")?.addEventListener("click",searchPlayerHistory);
+  document.getElementById("historyNameInput")?.addEventListener("keydown",e=>{if(e.key==="Enter") searchPlayerHistory();});
+  document.querySelectorAll(".main-tabs button").forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll(".main-tabs button").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+      document.getElementById(btn.dataset.tab)?.classList.add("active");
+      if(btn.dataset.tab==="score") renderScore();
+      if(btn.dataset.tab==="results") renderResults(currentLimit);
+      window.scrollTo(0,0);
+    };
+  });
+}
+
 migrateDefaults();
 renderSettings();
 renderScore();
 renderResults(9);
+installCloudHistoryUI();
