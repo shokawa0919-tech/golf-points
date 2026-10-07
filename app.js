@@ -664,6 +664,20 @@ async function saveRoundToSupabase(){
   const btn=document.getElementById("cloudSaveRoundBtn");
   if(btn){ btn.disabled=true; btn.textContent="保存中…"; }
   try{
+    // 同じ日付・ゴルフ場・4人の組み合わせが既にあれば重複保存しない。
+    const checkParams=new URLSearchParams();
+    checkParams.set("select","id,player_names");
+    checkParams.set("played_date",`eq.${state.date}`);
+    checkParams.set("course_name",`eq.${state.golfCourse || state.course}`);
+    const checkRes=await fetch(`${SUPABASE_REST_URL}/golf_rounds?${checkParams.toString()}`,{headers:supabaseHeaders()});
+    if(!checkRes.ok) throw new Error(`${checkRes.status} ${await checkRes.text()}`);
+    const existing=await checkRes.json();
+    const key=a=>[...(a||[])].map(v=>String(v||"").trim()).sort().join("\u0001");
+    if(existing.some(r=>key(r.player_names)===key(names))){
+      alert("このラウンドはすでに保存されています。");
+      return;
+    }
+
     const res=await fetch(`${SUPABASE_REST_URL}/golf_rounds`,{
       method:"POST",
       headers:supabaseHeaders({"Prefer":"return=representation"}),
@@ -686,45 +700,38 @@ async function saveRoundToSupabase(){
 
 function historyResultHtml(rounds,query){
   if(!rounds.length) return `<div class="card"><p>${escapeHtml(query)} さんの履歴はまだありません。</p></div>`;
-  return rounds.map(r=>{
+
+  // 過去に同じラウンドを複数回保存していても、履歴では最新の1件だけ表示する。
+  const seen=new Set();
+  const unique=rounds.filter(r=>{
+    const names=Array.isArray(r.player_names)?r.player_names:[];
+    const k=[r.played_date||"",r.course_name||"",...[...names].map(v=>String(v||"").trim()).sort()].join("\u0001");
+    if(seen.has(k)) return false;
+    seen.add(k); return true;
+  });
+
+  return unique.map(r=>{
     const rd=r.round_data||{};
     const names=Array.isArray(r.player_names)?r.player_names:[];
     let summary="";
-    const old=state;
     try{
-      state=rd;
+      const old=state; state=rd;
       const y=calcYoko(18);
-      const gross=[0,0,0,0];
-      for(let h=0;h<18;h++){
-        for(let p=0;p<4;p++) gross[p]+=Number(state.holes?.[h]?.strokes?.[p]||0);
-      }
-      const handicaps=(state.tateHandicaps||[0,0,0,0]).map(Number);
-      const tate=gross.map((g,p)=>g-handicaps[p]);
-
-      summary=`<div class="history-final-title">18H最終結果</div>
-        <div class="history-final-table">
-          <div class="history-final-row history-final-head">
-            <span>氏名</span><span>ヨコ</span><span>タテ</span><span>合計</span>
-          </div>
-          ${names.map((n,p)=>`<div class="history-final-row">
-            <span>${escapeHtml(n)}</span>
-            <span>${y.totals[p]??0}</span>
-            <span>${tate[p]??0}</span>
-            <span>${(y.totals[p]??0)+(tate[p]??0)}</span>
-          </div>`).join("")}
-        </div>`;
-    }catch(e){
-      console.error(e);
-      summary='<p>18H最終結果を表示できませんでした。</p>';
-    }finally{
+      const yokoPts=settlementPoints(y.totals,false);
+      const nets=[0,1,2,3].map(p=>netRange(1,18,p));
+      const tatePts=settlementPoints(nets,true);
+      const totals=tatePts.map((v,p)=>v===null?null:v+yokoPts[p]);
+      const order=[0,1,2,3].sort((a,b)=>(totals[b]??-999999)-(totals[a]??-999999));
+      summary=`<h2>18H最終結果</h2><div class="table-wrap"><table><thead><tr><th>氏名</th><th>ヨコ</th><th>タテ</th><th>合計</th></tr></thead><tbody>${order.map(p=>`<tr><td>${escapeHtml(names[p]||playerNames()[p])}</td><td>${signed(yokoPts[p])}</td><td>${tatePts[p]===null?"－":signed(tatePts[p])}</td><td>${totals[p]===null?"－":signed(totals[p])}</td></tr>`).join("")}</tbody></table></div>`;
       state=old;
-    }
+    }catch(e){ summary=""; }
     return `<div class="card history-round-card">
       <h2>${escapeHtml(r.played_date||"")}　${escapeHtml(r.course_name||"")}</h2>
       ${summary}
     </div>`;
   }).join("");
 }
+
 async function searchPlayerHistory(){
   const input=document.getElementById("historyNameInput");
   const out=document.getElementById("historyResults");
@@ -746,23 +753,7 @@ async function searchPlayerHistory(){
   }
 }
 
-
-function installHistoryFinalStyles(){
-  if(document.getElementById("historyFinalStyles")) return;
-  const s=document.createElement("style");
-  s.id="historyFinalStyles";
-  s.textContent=`
-    .history-final-title{font-weight:800;color:#0966d9;font-size:1.08rem;margin:12px 0 8px}
-    .history-final-table{width:100%;border-top:1px solid #d7e4f3}
-    .history-final-row{display:grid;grid-template-columns:1.7fr .75fr .75fr .8fr;gap:6px;padding:9px 4px;border-bottom:1px solid #d7e4f3;align-items:center}
-    .history-final-row span:not(:first-child){text-align:right;font-weight:700}
-    .history-final-head{font-size:.9rem;font-weight:800;color:#334155}
-  `;
-  document.head.appendChild(s);
-}
-
 function installCloudHistoryUI(){
-  installHistoryFinalStyles();
   const tabs=document.querySelector(".main-tabs");
   if(tabs && !document.querySelector('[data-tab="history"]')){
     const b=document.createElement("button");
