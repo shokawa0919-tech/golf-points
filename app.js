@@ -109,6 +109,15 @@ function renderSettings(){
   document.getElementById("golfCourseInput").value = state.golfCourse || state.course || "";
   document.getElementById("frontCourseInput").value = state.frontCourse || "";
   document.getElementById("backCourseInput").value = state.backCourse || "";
+  ["frontCourseInput","backCourseInput"].forEach((id,i)=>{
+    document.getElementById(id).addEventListener("input",e=>{
+      if(i===0) state.frontCourse=e.target.value;
+      else state.backCourse=e.target.value;
+      document.querySelectorAll(".course-section-row th").forEach((th,j)=>{
+        th.textContent=`${j===0 ? "前半" : "後半"}コース：${(j===0 ? state.frontCourse : state.backCourse) || "未設定"}`;
+      });
+    });
+  });
 
   const nameWrap=document.getElementById("playerNameInputs");
   nameWrap.innerHTML = state.names.map((n,i)=>`
@@ -133,8 +142,9 @@ function renderSettings(){
   `).join("");
 
   document.getElementById("handicapTable").innerHTML = state.handicap.map((row,h)=>`
+    ${h===0 || h===9 ? `<tr class="course-section-row"><th colspan="7" style="text-align:left;background:#e8f1ff;color:#174477;padding:10px 12px;font-weight:700">${h===0 ? "前半" : "後半"}コース：${escapeHtml((h===0 ? state.frontCourse : state.backCourse) || "未設定")}</th></tr>` : ""}
     <tr>
-      <td>${h+1}H</td>
+      <td>${h%9+1}H</td>
       ${row.map((v,p)=>`<td><input class="small-num" type="number" step="1" data-h="${h}" data-p="${p}" value="${v}"></td>`).join("")}
       <td><input type="checkbox" data-drive-h="${h}" ${state.driveHoles[h]?"checked":""}></td>
       <td><input type="checkbox" data-near-h="${h}" ${state.nearHoles[h]?"checked":""}></td>
@@ -168,8 +178,11 @@ function saveSettings(){
 
 function renderHoleSelector(){
   const wrap=document.getElementById("holeSelector");
-  wrap.innerHTML = Array.from({length:18},(_,i)=>`
-    <button data-hole="${i+1}" class="${currentHole===i+1?"active":""}">${i+1}</button>
+  wrap.innerHTML = [0,9].map(start=>`
+    <div class="course-selector-group" style="width:100%;margin:8px 0 4px;font-weight:700;color:#174477">${start===0 ? "前半" : "後半"}コース：${escapeHtml((start===0 ? state.frontCourse : state.backCourse) || "未設定")}</div>
+    ${Array.from({length:9},(_,i)=>`
+      <button data-hole="${start+i+1}" class="${currentHole===start+i+1?"active":""}">${i+1}</button>
+    `).join("")}
   `).join("");
   wrap.querySelectorAll("button").forEach(b=>b.onclick=()=>{saveCurrentHole();currentHole=Number(b.dataset.hole);renderScore();});
 }
@@ -214,7 +227,9 @@ function renderScore(){
   const h=state.holes[currentHole-1];
 
   const holePar = state.nearHoles[currentHole-1] ? 3 : (state.driveHoles[currentHole-1] ? 5 : 4);
-  document.getElementById("holeTitle").innerHTML=`${currentHole}H <span style="font-size:.72em;margin-left:18px;font-weight:700">Par ${holePar}</span>`;
+  const displayHole = (currentHole-1)%9+1;
+  const displayCourse = currentHole<=9 ? state.frontCourse : state.backCourse;
+  document.getElementById("holeTitle").innerHTML=`<span style="font-size:.72em;font-weight:700">${escapeHtml(displayCourse || (currentHole<=9 ? "前半コース" : "後半コース"))}</span> ${displayHole}H <span style="font-size:.72em;margin-left:12px;font-weight:700">Par ${holePar}</span>`;
   const halfCourse = currentHole<=9 ? state.frontCourse : state.backCourse;
   const halfLabel = currentHole<=9 ? "前半コース未設定" : "後半コース未設定";
   document.getElementById("holeMeta").textContent=`${state.golfCourse || state.course || "ゴルフ場未設定"} / ${halfCourse || halfLabel} / ${state.date || "日付未設定"}`;
