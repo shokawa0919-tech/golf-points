@@ -178,14 +178,14 @@ function saveSettings(){
 
 function renderHoleSelector(){
   const wrap=document.getElementById("holeSelector");
-  // 各コースを独立した9列グリッドにし、既存のflex配置による折返しを防ぐ。
-  wrap.style.display="block";
+  // Keep course labels outside the nine-button rows so legacy flex styles cannot stretch buttons.
+  wrap.style.cssText="display:block;width:100%;box-sizing:border-box;";
   wrap.innerHTML = [0,9].map(start=>`
-    <div class="course-selector-section" style="width:100%;margin:8px 0 12px;box-sizing:border-box">
-      <div class="course-selector-group" style="font-weight:700;color:#174477;margin-bottom:6px;overflow-wrap:anywhere">${start===0 ? "前半" : "後半"}コース：${escapeHtml((start===0 ? state.frontCourse : state.backCourse) || "未設定")}</div>
-      <div class="course-selector-buttons" style="display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:4px;width:100%;box-sizing:border-box">
+    <div style="display:block;width:100%;margin:10px 0 14px;box-sizing:border-box;">
+      <div style="display:block;font-weight:700;color:#174477;font-size:13px;line-height:1.5;margin-bottom:7px;overflow-wrap:anywhere;">${start===0 ? "前半" : "後半"}コース：${escapeHtml((start===0 ? state.frontCourse : state.backCourse) || "未設定")}</div>
+      <div style="display:grid !important;grid-template-columns:repeat(9,minmax(0,1fr)) !important;grid-auto-flow:row;gap:4px;width:100%;box-sizing:border-box;align-items:stretch;">
         ${Array.from({length:9},(_,i)=>`
-          <button type="button" data-hole="${start+i+1}" class="${currentHole===start+i+1?"active":""}" style="width:100%;min-width:0;box-sizing:border-box;padding:8px 0;min-height:38px">${i+1}</button>
+          <button type="button" data-hole="${start+i+1}" class="${currentHole===start+i+1?"active":""}" style="display:flex !important;align-items:center;justify-content:center;flex:none !important;grid-column:auto !important;width:100% !important;min-width:0 !important;height:38px !important;min-height:38px !important;max-height:38px !important;margin:0 !important;padding:0 !important;box-sizing:border-box;font-size:13px;line-height:1;">${i+1}</button>
         `).join("")}
       </div>
     </div>
